@@ -1,0 +1,23 @@
+{
+    "name": "WebRTC io",
+    "version": "0.0.0",
+    "description": "connect",
+    "dependencies": {
+        "socket.io": "*",
+        "underscore": "*"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "start": "node webrtc-server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/vaseninm/webrtcio.git"
+    },
+    "author": "vaseninm <vasenin@pixelio.ru>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/vaseninm/connect/webrtcio"
+    },
+    "homepage": "https://github.com/vaseninm/webrtcio"
+}
