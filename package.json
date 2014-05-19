@@ -1,7 +1,8 @@
 {
-    "name": "WebRTC io",
+    "name": "webrtcio",
     "version": "0.0.0",
     "description": "connect",
+	"main": "webrtc-server.js",
     "dependencies": {
         "socket.io": "*",
         "underscore": "*"
