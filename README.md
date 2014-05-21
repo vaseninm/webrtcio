@@ -1,49 +1,49 @@
-#Клиент
+#Client side
 
-##Инициализация
-`var WebRTC = $.fn.WebRTC(socket, {});`
+##Init
+`var WebRTC = $.fn.WebRTC(socket, config);`
 
-##Методы
+##Methods
 * call()
 * answer()
 * play()
 * pause()
 * disconnect()
 
-##События (задаются в настройках)
-`onGetLocalVideo: function (url)`
-`onGetRemoteVideo: function (clientId, url)`
-`onCall: function (clientId)`
-`onError: function (code, text)`
+##Events (set in config)
+	onGetLocalVideo: function (url)
+	onGetRemoteVideo: function (clientId, url)
+	onCall: function (clientId)
+	onError: function (code, text)
 
-##Настройки
+##Params
 * iceServers
 * video
 
-## Пример настройки видео
-`video: {
- 	mandatory: {
- 		maxWidth: 400,
- 		maxHeight: 300
- 	},
- 	optional: [
- 		{
- 			minWidth: 120
- 		},
- 		{
- 			minHeight: 90
- 		},
- 		{
- 			maxWidth: 300
- 		},
- 		{
- 			maxHeight: 200
- 		}
- 	]
- },`
+## Example config "video"
+	video: {
+		mandatory: {
+			maxWidth: 400,
+			maxHeight: 300
+		},
+		optional: [
+			{
+				minWidth: 120
+			},
+			{
+				minHeight: 90
+			},
+			{
+				maxWidth: 300
+			},
+			{
+				maxHeight: 200
+			}
+		]
+	}
 
-#Сервер
+#Server side
 
-##Инициализация
-`var webRTC = require('webrtcio');`
-`webRTC.attachSocket(socket);`
+##Init
+	var webRTC = require('webrtcio');
+	webRTC.attachSocket(socket);
