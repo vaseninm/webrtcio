@@ -116,82 +116,82 @@ define(['underscore'], function(_){
 			console.log('Получили ошибку', error);
 		});
 
-	}
-
-	/* Приватные функции */
-	var sendOffer = function (clientId, type) {
-		if (type === 'offer') {
-			var fn = 'createOffer';
-		} else if (type === 'answer') {
-			var fn = 'createAnswer';
-		} else {
-			throw new Error();
-		}
-
-		console.log('Вызван', fn);
-
-		var pc = getPeerConnection(clientId);
-
-		pc[fn](function (description) {
-				pc.setLocalDescription(description, function () {
-					console.log('Локал дескрипшн установлен');
-				}, function (error) {
-					console.log('Возникла ошибка', error);
-				});
-
-				socket.emit('offerToClient', {
-					id: clientId,
-					type: type,
-					description: description
-				});
-			}, function (error) {
-				console.log(error)
-			},
-			{ mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
-		);
-	}
-
-	var getPeerConnection = function (clientId) {
-		if (!clientList[clientId]) {
-
-			var pc = new PeerConnection({iceServers: options.iceServers});
-
-			pc.addStream(localStream);
-			pc.onaddstream = function (event) {
-				console.log('Получен удаленый стрим');
-
-				var clientId = getClientIdByPeerConnection(event.currentTarget);
-				var url = URL.createObjectURL(event.stream);
-
-				options.onGetRemoteVideo(clientId, url);
-			};
-			pc.onicecandidate = function (iceCandidate) {
-				console.log('Получен айс кандидат от сервера');
-
-				if (!iceCandidate.candidate) return false;
-
-				var clientId = getClientIdByPeerConnection(iceCandidate.currentTarget);
-
-				socket.emit('iceCandidateToClient', {
-					id: clientId,
-					iceCandidate: iceCandidate
-				});
-			};
-
-			clientList[clientId] = pc;
-		}
-
-		return clientList[clientId];
-	}
-
-	var getClientIdByPeerConnection = function (pc) {
-		for (id in clientList) {
-			if (clientList[id] === pc) {
-				return id;
+		/* Приватные функции */
+		var sendOffer = function (clientId, type) {
+			if (type === 'offer') {
+				var fn = 'createOffer';
+			} else if (type === 'answer') {
+				var fn = 'createAnswer';
+			} else {
+				throw new Error();
 			}
+
+			console.log('Вызван', fn);
+
+			var pc = getPeerConnection(clientId);
+
+			pc[fn](function (description) {
+					pc.setLocalDescription(description, function () {
+						console.log('Локал дескрипшн установлен');
+					}, function (error) {
+						console.log('Возникла ошибка', error);
+					});
+
+					socket.emit('offerToClient', {
+						id: clientId,
+						type: type,
+						description: description
+					});
+				}, function (error) {
+					console.log(error)
+				},
+				{ mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
+			);
 		}
 
-		return null;
+		var getPeerConnection = function (clientId) {
+			if (!clientList[clientId]) {
+
+				var pc = new PeerConnection({iceServers: options.iceServers});
+
+				pc.addStream(localStream);
+				pc.onaddstream = function (event) {
+					console.log('Получен удаленый стрим');
+
+					var clientId = getClientIdByPeerConnection(event.currentTarget);
+					var url = URL.createObjectURL(event.stream);
+
+					options.onGetRemoteVideo(clientId, url);
+				};
+				pc.onicecandidate = function (iceCandidate) {
+					console.log('Получен айс кандидат от сервера');
+
+					if (!iceCandidate.candidate) return false;
+
+					var clientId = getClientIdByPeerConnection(iceCandidate.currentTarget);
+
+					socket.emit('iceCandidateToClient', {
+						id: clientId,
+						iceCandidate: iceCandidate
+					});
+				};
+
+				clientList[clientId] = pc;
+			}
+
+			return clientList[clientId];
+		}
+
+		var getClientIdByPeerConnection = function (pc) {
+			for (id in clientList) {
+				if (clientList[id] === pc) {
+					return id;
+				}
+			}
+
+			return null;
+		}
+
 	}
 
 	return {
