@@ -116,6 +116,8 @@ define(['underscore'], function(_){
 			console.log('Получили ошибку', error);
 		});
 
+	}
+
 	/* Приватные функции */
 	var sendOffer = function (clientId, type) {
 		if (type === 'offer') {
