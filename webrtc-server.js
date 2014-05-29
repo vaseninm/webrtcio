@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 function WebRTC() { }
 
 WebRTC.prototype.attachSocket = function (socket) {

@@ -1,6 +1,6 @@
 {
     "name": "webrtcio",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "description": "connect",
 	"main": "webrtc-server.js",
     "dependencies": {

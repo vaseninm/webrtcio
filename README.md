@@ -1,14 +1,17 @@
 #Client side
 
 ##Init
-`var WebRTC = $.fn.WebRTC(socket, config);`
+	require(['webrtcio'], function(WebRTCio){
+		var WebRTC = WebRTCio.connect(socket, config);
+	});
 
 ##Methods
+* connect()
+* disconnect()
 * call()
 * answer()
 * play()
 * pause()
-* disconnect()
 
 ##Events (set in config)
 	onGetLocalVideo: function (url)
