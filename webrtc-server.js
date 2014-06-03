@@ -7,10 +7,8 @@ WebRTC.prototype.attachSocket = function (socket) {
 }
 
 function WebRTCConnection (socket) {
-	var io = socket.manager;
-
 	socket.on('offerToClient', function (data) {
-		io.sockets.socket(data.id).emit('offerFromClient', {
+		socket.to(data.id).emit('offerFromClient', {
 			id: socket.id,
 			type: data.type,
 			description: data.description
@@ -18,7 +16,7 @@ function WebRTCConnection (socket) {
 	});
 
 	socket.on('iceCandidateToClient', function (data) {
-		io.sockets.socket(data.id).emit('iceCandidateFromClient', {
+		socket.to(data.id).emit('iceCandidateFromClient', {
 			id: socket.id,
 			iceCandidate: data.iceCandidate
 		});

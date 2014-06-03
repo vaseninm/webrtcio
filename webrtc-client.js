@@ -1,4 +1,4 @@
-define(['underscore'], function(_){
+(function(){
 
 	var defaults = {
 		iceServers: [
@@ -67,54 +67,13 @@ define(['underscore'], function(_){
 		}
 	};
 
-	var WebRTC = function (socket, params) {
+	var webRTC = function () {
 
 		/* Переменные */
-		var options = $.extend({}, defaults, params);
-		var PeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
-		var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-		var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 		var localStream = null;
 		var clientList = {};
-
-		/* Инициализация */
-		navigator.getUserMedia({
-			audio: true,
-			video: options.video
-		}, function (stream) {
-			console.log('Получено локальное видео');
-
-			localStream = stream;
-
-			socket.on('offerFromClient', function (data) {
-				console.log('Получен', data.type);
-
-				var pc = getPeerConnection(data.id);
-
-				pc.setRemoteDescription(new SessionDescription(data.description), function () {
-					if (data.type === 'offer') {
-						options.onCall(data.id);
-					}
-				}, function (error) {
-					console.log('Возникла ошибка', error);
-				});
-			})
-
-			socket.on('iceCandidateFromClient', function (data) {
-				console.log('Получен ice candidate от пользователя');
-
-				var pc = getPeerConnection(data.id);
-				var candidate = new IceCandidate(data.iceCandidate.candidate);
-
-				pc.addIceCandidate(candidate);
-			})
-
-			options.onGetLocalVideo(URL.createObjectURL(stream));
-		}, function (error) {
-			console.log('Получили ошибку', error);
-		});
+		var options = {};
+		var socket;
 
 		/* Приватные функции */
 		var sendOffer = function (clientId, type) {
@@ -192,24 +151,81 @@ define(['underscore'], function(_){
 			return null;
 		}
 
-	}
+		return {
+			connect: function(sock, params) {
+				for(i in defaults) {
+					if (params[i] !== undefined) {
+						options[i] = params[i];
+					} else {
+						options[i] = defaults[i];
+					}
+				}
 
-	return {
-		connect: WebRTC,
-		disconnect: function(clientId) {
-			delete clientList[clientId];
-		},
-		call: function (clientId) {
-			sendOffer(clientId, 'offer');
-		},
-		answer: function (clientId) {
-			sendOffer(clientId, 'answer');
-		},
-		play: function () {
-			_.first(localStream.getVideoTracks()).enabled = true;
-		},
-		pause: function () {
-			_.first(localStream.getVideoTracks()).enabled = false;
-		}
-	};
-});
+				socket = sock;
+
+				navigator.getUserMedia({
+					audio: true,
+					video: options.video
+				}, function (stream) {
+					console.log('Получено локальное видео');
+
+					localStream = stream;
+
+					socket.on('offerFromClient', function (data) {
+						console.log('Получен', data.type);
+
+						var pc = getPeerConnection(data.id);
+
+						pc.setRemoteDescription(new SessionDescription(data.description), function () {
+							if (data.type === 'offer') {
+								options.onCall(data.id);
+							}
+						}, function (error) {
+							console.log('Возникла ошибка', error);
+						});
+					})
+
+					socket.on('iceCandidateFromClient', function (data) {
+						console.log('Получен ice candidate от пользователя');
+
+						var pc = getPeerConnection(data.id);
+						var candidate = new IceCandidate(data.iceCandidate.candidate);
+
+						pc.addIceCandidate(candidate);
+					})
+
+					options.onGetLocalVideo(URL.createObjectURL(stream));
+				}, function (error) {
+					console.log('Получили ошибку', error);
+				});
+			},
+			disconnect: function(clientId) {
+				delete clientList[clientId];
+			},
+			call: function (clientId) {
+				sendOffer(clientId, 'offer');
+			},
+			answer: function (clientId) {
+				sendOffer(clientId, 'answer');
+			},
+			play: function () {
+				var tracks = localStream.getVideoTracks();
+				if (tracks.length > 0)
+					tracks[0].enabled = true;
+			},
+			pause: function () {
+				var tracks = localStream.getVideoTracks();
+				if (tracks.length > 0)
+					tracks[0].enabled = false;
+			}
+		};
+	}.call();
+
+	if (typeof define === 'function' && define.amd) {
+		define(function() {
+			return webRTC;
+		});
+	} else {
+		this.webRTC = webRTC;
+	}
+}).call(this);
