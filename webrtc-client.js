@@ -111,7 +111,7 @@
 		var getPeerConnection = function (clientId) {
 			if (!clientList[clientId]) {
 
-				var pc = new PeerConnection({iceServers: options.iceServers});
+				var pc = new RTCPeerConnection({iceServers: options.iceServers});
 
 				pc.addStream(localStream);
 				pc.onaddstream = function (event) {
@@ -163,7 +163,7 @@
 
 				socket = sock;
 
-				navigator.getUserMedia({
+				getUserMedia({
 					audio: true,
 					video: options.video
 				}, function (stream) {
@@ -176,7 +176,7 @@
 
 						var pc = getPeerConnection(data.id);
 
-						pc.setRemoteDescription(new SessionDescription(data.description), function () {
+						pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
 							if (data.type === 'offer') {
 								options.onCall(data.id);
 							}
@@ -189,7 +189,7 @@
 						console.log('Получен ice candidate от пользователя');
 
 						var pc = getPeerConnection(data.id);
-						var candidate = new IceCandidate(data.iceCandidate.candidate);
+						var candidate = new RTCIceCandidate(data.iceCandidate.candidate);
 
 						pc.addIceCandidate(candidate);
 					})
