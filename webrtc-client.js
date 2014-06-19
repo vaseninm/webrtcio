@@ -161,8 +161,6 @@
 					}
 				}
 
-				socket = sock;
-
 				getUserMedia({
 					audio: true,
 					video: options.video
@@ -171,28 +169,7 @@
 
 					localStream = stream;
 
-					socket.on('offerFromClient', function (data) {
-						console.log('Получен', data.type);
-
-						var pc = getPeerConnection(data.id);
-
-						pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
-							if (data.type === 'offer') {
-								options.onCall(data.id);
-							}
-						}, function (error) {
-							console.log('Возникла ошибка', error);
-						});
-					})
-
-					socket.on('iceCandidateFromClient', function (data) {
-						console.log('Получен ice candidate от пользователя');
-
-						var pc = getPeerConnection(data.id);
-						var candidate = new RTCIceCandidate(data.iceCandidate.candidate);
-
-						pc.addIceCandidate(candidate);
-					})
+					if (sock) this.attach(sock);
 
 					options.onGetLocalVideo(URL.createObjectURL(stream));
 				}, function (error) {
@@ -201,6 +178,32 @@
 			},
 			disconnect: function(clientId) {
 				delete clientList[clientId];
+			},
+			attach: function(sock){
+				socket = sock;
+
+				socket.on('offerFromClient', function (data) {
+					console.log('Получен', data.type);
+
+					var pc = getPeerConnection(data.id);
+
+					pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
+						if (data.type === 'offer') {
+							options.onCall(data.id);
+						}
+					}, function (error) {
+						console.log('Возникла ошибка', error);
+					});
+				})
+
+				socket.on('iceCandidateFromClient', function (data) {
+					console.log('Получен ice candidate от пользователя');
+
+					var pc = getPeerConnection(data.id);
+					var candidate = new RTCIceCandidate(data.iceCandidate.candidate);
+
+					pc.addIceCandidate(candidate);
+				})
 			},
 			call: function (clientId) {
 				sendOffer(clientId, 'offer');
