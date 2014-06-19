@@ -37,6 +37,7 @@
 				username: '28224511:1379330808'
 			}
 		],
+		audio: true,
 		video: {
 			mandatory: {
 				maxWidth: 400,
@@ -85,15 +86,13 @@
 				throw new Error();
 			}
 
-			console.log('Вызван', fn);
-
 			var pc = getPeerConnection(clientId);
 
 			pc[fn](function (description) {
 					pc.setLocalDescription(description, function () {
-						console.log('Локал дескрипшн установлен');
+
 					}, function (error) {
-						console.log('Возникла ошибка', error);
+						options.onError(1, error);
 					});
 
 					socket.emit('offerToClient', {
@@ -115,16 +114,12 @@
 
 				pc.addStream(localStream);
 				pc.onaddstream = function (event) {
-					console.log('Получен удаленый стрим');
-
 					var clientId = getClientIdByPeerConnection(event.currentTarget);
 					var url = URL.createObjectURL(event.stream);
 
 					options.onGetRemoteVideo(clientId, url);
 				};
 				pc.onicecandidate = function (iceCandidate) {
-					console.log('Получен айс кандидат от сервера');
-
 					if (!iceCandidate.candidate) return false;
 
 					var clientId = getClientIdByPeerConnection(iceCandidate.currentTarget);
@@ -161,20 +156,21 @@
 					}
 				}
 
-				getUserMedia({
-					audio: true,
-					video: options.video
-				}, function (stream) {
-					console.log('Получено локальное видео');
+				if (options.audio || options.video) {
+					getUserMedia({
+						audio: options.audio,
+						video: options.video
+					}, function (stream) {
+						localStream = stream;
 
-					localStream = stream;
+						if (sock) this.attach(sock);
 
-					if (sock) this.attach(sock);
+						options.onGetLocalVideo(URL.createObjectURL(stream));
+					}, function (error) {
+						options.onError(2, error);
+					});
+				}
 
-					options.onGetLocalVideo(URL.createObjectURL(stream));
-				}, function (error) {
-					console.log('Получили ошибку', error);
-				});
 			},
 			disconnect: function(clientId) {
 				delete clientList[clientId];
@@ -183,8 +179,6 @@
 				socket = sock;
 
 				socket.on('offerFromClient', function (data) {
-					console.log('Получен', data.type);
-
 					var pc = getPeerConnection(data.id);
 
 					pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
@@ -192,13 +186,11 @@
 							options.onCall(data.id);
 						}
 					}, function (error) {
-						console.log('Возникла ошибка', error);
+						options.onError(3, error);
 					});
 				})
 
 				socket.on('iceCandidateFromClient', function (data) {
-					console.log('Получен ice candidate от пользователя');
-
 					var pc = getPeerConnection(data.id);
 					var candidate = new RTCIceCandidate(data.iceCandidate.candidate);
 
