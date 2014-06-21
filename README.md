@@ -3,15 +3,20 @@
 ##Init
 	require(['webrtcio'], function(WebRTCio){
 		var WebRTC = WebRTCio.connect(socket, config);
+		// or
+		var WebRTC = WebRTCio.connect(null, config);
+		WebRTC.attach(socket);
 	});
 
 ##Methods
-* connect()
-* disconnect()
-* call()
-* answer()
+* connect(socket, params)
+* attach(socket)
+* call(clientId)
+* answer(clientId)
 * play()
 * pause()
+* setOptions(options)
+* setOption(key, value)
 
 ##Events (set in config)
 	onGetLocalVideo: function (url)
@@ -22,6 +27,7 @@
 ##Params
 * iceServers
 * video
+* audio
 
 ## Example config "video"
 	video: {

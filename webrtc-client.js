@@ -171,9 +171,7 @@
 					});
 				}
 
-			},
-			disconnect: function(clientId) {
-				delete clientList[clientId];
+                return this;
 			},
 			attach: function(sock){
 				socket = sock;
@@ -196,23 +194,45 @@
 
 					pc.addIceCandidate(candidate);
 				})
+
+                return this;
 			},
 			call: function (clientId) {
 				sendOffer(clientId, 'offer');
+
+                return this;
 			},
 			answer: function (clientId) {
 				sendOffer(clientId, 'answer');
+
+                return this;
 			},
 			play: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = true;
+
+                return this;
 			},
 			pause: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = false;
-			}
+
+                return this;
+			},
+            setOption: function(key, value){
+                options[key] = value;
+
+                return this;
+            },
+            setOptions: function (options) {
+                for (key in options) {
+                    this.setOption(key, options['key']);
+                }
+
+                return this;
+            }
 		};
 	}.call();
 
