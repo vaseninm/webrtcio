@@ -1,6 +1,6 @@
 function WebRTC() { }
 
-WebRTC.prototype.attachSocket = function (socket) {
+WebRTC.prototype.attach = function (socket) {
 	WebRTCConnection(socket);
 
 	return this;

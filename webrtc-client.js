@@ -151,7 +151,7 @@
 				for(i in defaults) {
 					if (params[i] !== undefined) {
 						options[i] = params[i];
-					} else {
+					} else if (options[i] === undefined){
 						options[i] = defaults[i];
 					}
 				}
@@ -171,7 +171,7 @@
 					});
 				}
 
-                return this;
+				return this;
 			},
 			attach: function(sock){
 				socket = sock;
@@ -195,44 +195,44 @@
 					pc.addIceCandidate(candidate);
 				})
 
-                return this;
+				return this;
 			},
 			call: function (clientId) {
 				sendOffer(clientId, 'offer');
 
-                return this;
+				return this;
 			},
 			answer: function (clientId) {
 				sendOffer(clientId, 'answer');
 
-                return this;
+				return this;
 			},
 			play: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = true;
 
-                return this;
+				return this;
 			},
 			pause: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = false;
 
-                return this;
+				return this;
 			},
-            setOption: function(key, value){
-                options[key] = value;
+			setOption: function(key, value){
+				options[key] = value;
 
-                return this;
-            },
-            setOptions: function (options) {
-                for (key in options) {
-                    this.setOption(key, options['key']);
-                }
+				return this;
+			},
+			setOptions: function (options) {
+				for (key in options) {
+					this.setOption(key, options[key]);
+				}
 
-                return this;
-            }
+				return this;
+			}
 		};
 	}.call();
 
