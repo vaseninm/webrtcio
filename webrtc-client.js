@@ -1,4 +1,4 @@
-(function(){
+(function () {
 
 	var defaults = {
 		iceServers: [
@@ -86,9 +86,12 @@
 				throw new Error();
 			}
 
-			var pc = getPeerConnection(clientId);
+			var pc = getPeerConnection(clientId, type);
 
 			pc[fn](function (description) {
+					description.sdp = description.sdp.replace( /b=AS([^\r\n]+\r\n)/g , '');
+					description.sdp = description.sdp.replace( /a=mid:audio\r\n/g , 'a=mid:audio\r\nb=AS:16\r\n');
+					description.sdp = description.sdp.replace( /a=mid:video\r\n/g , 'a=mid:video\r\nb=AS:128\r\n'); 
 					pc.setLocalDescription(description, function () {
 
 					}, function (error) {
@@ -107,12 +110,14 @@
 			);
 		}
 
-		var getPeerConnection = function (clientId) {
+		var getPeerConnection = function (clientId, type) {
 			if (!clientList[clientId]) {
 
-				var pc = new RTCPeerConnection({iceServers: options.iceServers});
+				var pc = new RTCPeerConnection({iceServers: options.iceServers}, {optional:[{DtlsSrtpKeyAgreement: true}]});
 
-				pc.addStream(localStream);
+				if (type != 'answer' && !options.answerWithoutMedia) {
+					pc.addStream(localStream);
+				}
 				pc.onaddstream = function (event) {
 					var clientId = getClientIdByPeerConnection(event.currentTarget);
 					var url = URL.createObjectURL(event.stream);
@@ -147,11 +152,11 @@
 		}
 
 		return {
-			connect: function(sock, params) {
-				for(i in defaults) {
+			connect: function (sock, params) {
+				for (i in defaults) {
 					if (params[i] !== undefined) {
 						options[i] = params[i];
-					} else if (options[i] === undefined){
+					} else if (options[i] === undefined) {
 						options[i] = defaults[i];
 					}
 				}
@@ -162,9 +167,7 @@
 						video: options.video
 					}, function (stream) {
 						localStream = stream;
-
 						if (sock) this.attach(sock);
-
 						options.onGetLocalVideo(URL.createObjectURL(stream));
 					}, function (error) {
 						options.onError(2, error);
@@ -173,11 +176,15 @@
 
 				return this;
 			},
-			attach: function(sock){
+			attach: function (sock) {
 				socket = sock;
 
 				socket.on('offerFromClient', function (data) {
 					var pc = getPeerConnection(data.id);
+					data.description.sdp = data.description.sdp.replace( /b=AS([^\r\n]+\r\n)/g , '');
+					data.description.sdp = data.description.sdp.replace( /a=mid:audio\r\n/g , 'a=mid:audio\r\nb=AS:16\r\n');
+					data.description.sdp = data.description.sdp.replace( /a=mid:video\r\n/g , 'a=mid:video\r\nb=AS:128\r\n'); 
+
 
 					pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
 						if (data.type === 'offer') {
@@ -207,21 +214,35 @@
 
 				return this;
 			},
-			play: function () {
+			videoPlay: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = true;
 
 				return this;
 			},
-			pause: function () {
+			videoPause: function () {
 				var tracks = localStream.getVideoTracks();
 				if (tracks.length > 0)
 					tracks[0].enabled = false;
 
 				return this;
 			},
-			setOption: function(key, value){
+			audioPlay: function () {
+				var tracks = localStream.getAudioTracks();
+				if (tracks.length > 0)
+					tracks[0].enabled = true;
+
+				return this;
+			},
+			audioPause: function () {
+				var tracks = localStream.getAudioTracks();
+				if (tracks.length > 0)
+					tracks[0].enabled = false;
+
+				return this;
+			},
+			setOption: function (key, value) {
 				options[key] = value;
 
 				return this;
@@ -237,7 +258,7 @@
 	}.call();
 
 	if (typeof define === 'function' && define.amd) {
-		define(function() {
+		define(function () {
 			return webRTC;
 		});
 	} else {
