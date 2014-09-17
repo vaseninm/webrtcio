@@ -78,6 +78,7 @@
 
 		/* Приватные функции */
 		var sendOffer = function (clientId, type) {
+
 			if (type === 'offer') {
 				var fn = 'createOffer';
 			} else if (type === 'answer') {
@@ -89,9 +90,9 @@
 			var pc = getPeerConnection(clientId, type);
 
 			pc[fn](function (description) {
-					description.sdp = description.sdp.replace( /b=AS([^\r\n]+\r\n)/g , '');
-					description.sdp = description.sdp.replace( /a=mid:audio\r\n/g , 'a=mid:audio\r\nb=AS:16\r\n');
-					description.sdp = description.sdp.replace( /a=mid:video\r\n/g , 'a=mid:video\r\nb=AS:128\r\n'); 
+					description.sdp = description.sdp.replace(/b=AS([^\r\n]+\r\n)/g, '');
+					description.sdp = description.sdp.replace(/a=mid:audio\r\n/g, 'a=mid:audio\r\nb=AS:16\r\n');
+					description.sdp = description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:128\r\n');
 					pc.setLocalDescription(description, function () {
 
 					}, function (error) {
@@ -113,7 +114,9 @@
 		var getPeerConnection = function (clientId, type) {
 			if (!clientList[clientId]) {
 
-				var pc = new RTCPeerConnection({iceServers: options.iceServers}, {optional:[{DtlsSrtpKeyAgreement: true}]});
+				var pc = new RTCPeerConnection({iceServers: options.iceServers}, {optional: [
+					{DtlsSrtpKeyAgreement: true}
+				]});
 
 				if (type != 'answer' && !options.answerWithoutMedia) {
 					pc.addStream(localStream);
@@ -126,6 +129,7 @@
 				};
 				pc.onicecandidate = function (iceCandidate) {
 					if (!iceCandidate.candidate) return false;
+					console.log('candidate: ', iceCandidate.candidate.candidate);
 
 					var clientId = getClientIdByPeerConnection(iceCandidate.currentTarget);
 
@@ -181,9 +185,10 @@
 
 				socket.on('offerFromClient', function (data) {
 					var pc = getPeerConnection(data.id);
-					data.description.sdp = data.description.sdp.replace( /b=AS([^\r\n]+\r\n)/g , '');
-					data.description.sdp = data.description.sdp.replace( /a=mid:audio\r\n/g , 'a=mid:audio\r\nb=AS:16\r\n');
-					data.description.sdp = data.description.sdp.replace( /a=mid:video\r\n/g , 'a=mid:video\r\nb=AS:128\r\n'); 
+
+					data.description.sdp = data.description.sdp.replace(/b=AS([^\r\n]+\r\n)/g, '');
+					data.description.sdp = data.description.sdp.replace(/a=mid:audio\r\n/g, 'a=mid:audio\r\nb=AS:16\r\n');
+					data.description.sdp = data.description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:128\r\n');
 
 
 					pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
@@ -253,6 +258,13 @@
 				}
 
 				return this;
+			},
+			removePeer: function(clientId){
+			    var peer = clientList[clientId];		
+			    if (peer){
+					peer.close();
+					delete clientList[clientId];
+			    }
 			}
 		};
 	}.call();
