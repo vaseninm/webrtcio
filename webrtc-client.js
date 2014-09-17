@@ -92,7 +92,7 @@
 			pc[fn](function (description) {
 					description.sdp = description.sdp.replace(/b=AS([^\r\n]+\r\n)/g, '');
 					description.sdp = description.sdp.replace(/a=mid:audio\r\n/g, 'a=mid:audio\r\nb=AS:16\r\n');
-					description.sdp = description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:128\r\n');
+					description.sdp = description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:64\r\n');
 					pc.setLocalDescription(description, function () {
 
 					}, function (error) {
@@ -188,7 +188,7 @@
 
 					data.description.sdp = data.description.sdp.replace(/b=AS([^\r\n]+\r\n)/g, '');
 					data.description.sdp = data.description.sdp.replace(/a=mid:audio\r\n/g, 'a=mid:audio\r\nb=AS:16\r\n');
-					data.description.sdp = data.description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:128\r\n');
+					data.description.sdp = data.description.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:64\r\n');
 
 
 					pc.setRemoteDescription(new RTCSessionDescription(data.description), function () {
