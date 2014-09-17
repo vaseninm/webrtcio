@@ -113,7 +113,6 @@
 
 		var getPeerConnection = function (clientId, type) {
 			if (!clientList[clientId]) {
-
 				var pc = new RTCPeerConnection({iceServers: options.iceServers}, {optional: [
 					{DtlsSrtpKeyAgreement: true}
 				]});
@@ -184,6 +183,10 @@
 				socket = sock;
 
 				socket.on('offerFromClient', function (data) {
+					if (clientList[data.id] && data.type == 'offer'){
+					    console.log('accepted dublicate offer');
+					    return false;	
+					}
 					var pc = getPeerConnection(data.id);
 
 					data.description.sdp = data.description.sdp.replace(/b=AS([^\r\n]+\r\n)/g, '');
